@@ -3,11 +3,7 @@ import java.awt.Graphics;
 
 public class Rect {
 	
-	int x;
-	int y;
-	
-	int w;
-	int h;
+	int x, y, w, h;
 	
 	double vx = 0;
 	double vy = 0;

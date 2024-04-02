@@ -38,10 +38,10 @@ public class GameS24 extends GameBase {
 		g.physicsOff();
 				
 		//if(UP_Pressed) soldier.jump(25);
-		if(UP_Pressed) g.goUP(5);
-		if(DN_Pressed) g.goDN(5);
-		if(LT_Pressed) g.goLT(5);
-		if(RT_Pressed) g.goRT(5);
+		if(pressing[UP]) g.goUP(5);
+		if(pressing[DN]) g.goDN(5);
+		if(pressing[LT]) g.goLT(5);
+		if(pressing[RT]) g.goRT(5);
 										
 		//if(UP_Pressed) chris.goUP(5);
 		//if(DN_Pressed) chris.goDN(5);
@@ -53,11 +53,9 @@ public class GameS24 extends GameBase {
 		//if(RT_Pressed)			Camera.moveRT(10);
 		
 		//CODE THAT ITERATES THROUGH wall Array AND CHECKS IF CHRIS IS OVERLAPS, THEN PUSHES OUT//
-		for( int i = 0; i < wall.length; i++) {
-			if(g.overlaps(wall[i])){
-				
-				g.pushedOutOf(wall[i]);
-				}
+		for( int i = 0; i < wall.length; i++) 
+		{
+			if(g.overlaps(wall[i])) g.pushedOutOf(wall[i]);	
 		}
 			
 	}
@@ -93,21 +91,15 @@ public class GameS24 extends GameBase {
 	
 	
 	//TOOL FOR SIZING RECTS//
-	public void keyPressed(KeyEvent e)
+	public void keyTyped(KeyEvent e)
 	{		
-		int code = e.getKeyCode();
+		char keyChar = Character.toLowerCase(e.getKeyChar());
 		
-		if (code == e.VK_UP   )   UP_Pressed = true;  
-		if (code == e.VK_DOWN )   DN_Pressed = true;  
-		if (code == e.VK_LEFT )   LT_Pressed = true;  
-		if (code == e.VK_RIGHT)   RT_Pressed = true; 
-		
-		if (code == e.VK_P) {
-			
+		if (keyChar == 'p') 
+		{	
 			System.out.println(g); 
-			for(int i = 0; i < wall.length; i++) {
-				System.out.println(wall[i]);
-			}
+			
+			for (Rect r : wall) System.out.println(r);
 		}
 	}
 	
