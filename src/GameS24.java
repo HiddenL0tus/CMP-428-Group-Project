@@ -6,36 +6,35 @@ public class GameS24 extends GameBase {
 	
 	//get the screen width and height of the device being used for camera calculations
 	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-	public static int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
-	public static int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
-	
-	ImageLayer m = new ImageLayer("mountains.gif", 0, 0, 10);
-	ImageLayer h = new ImageLayer("houses.gif", 0, 0, 3);	
-	ImageLayer t = new ImageLayer("trees.gif", 0, 0, 1);
-	
-	Image testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
+	public static final int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
+	public static final int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
 	
 	//actions for characters
 	String[] pose = {"dn", "up", "lt", "rt"};
 	
-	Rect player = new Rect(500, 600, 100, 100);
-	
-	Rect2[] walls =
-	{
-		new Rect2(860, 540, 75, 70),
-		new Rect2(1564, 153, 48, 804),
-		new Rect2(630, 155, 923, 32),
-		new Rect2(619, 154, 12, 831),
-		new Rect2(26, 1264, 2519, 40),
-	};
-	
-	Rect2[] doors = 
-	{
-		new Rect2(500,500,300,300)
-	};
+	Image testMap;
+	Rect player;
+	Rect2[] walls, doors;
 	
 	public void initialize()
-	{
+	{	
+		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
+		
+		player = new Rect(500, 600, 100, 100);
+		
+		walls = new Rect2[]
+				{
+					new Rect2(860, 540, 75, 70),
+					new Rect2(1564, 153, 48, 804),
+					new Rect2(630, 155, 923, 32),
+					new Rect2(619, 154, 12, 831),
+					new Rect2(26, 1264, 2519, 40),	
+				};
+		doors = new Rect2[]
+				{
+					new Rect2(500,500,300,300)
+				};
+		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
 				   		   player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
 	}
@@ -71,10 +70,6 @@ public class GameS24 extends GameBase {
 	{
 		
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
-		
-		m.draw(pen);
-		h.draw(pen);
-		t.draw(pen);
 
 		player.draw(pen);
 		
