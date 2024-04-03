@@ -119,6 +119,7 @@ public abstract class GameBase extends Applet implements Runnable, KeyListener, 
 	
 	
 	public abstract void inGameLoop();
+	public abstract void initialize();
 	
 	//draws offscreens and passes it to the screen we see, only clears offscreen
 	public void update(Graphics pen)
@@ -143,18 +144,15 @@ public abstract class GameBase extends Applet implements Runnable, KeyListener, 
 		offScreenPen = offScreenImg.getGraphics();
 		
 		addKeyListener(this);
+		addMouseListener(this);
+		addMouseMotionListener(this);
 		requestFocus();
 		
-		addMouseListener(this);
-		
-		addMouseMotionListener(this);
-
+		initialize();
 		
 		Thread t = new Thread(this);
-
 		t.start();
 	}
-	
 	
 	public void mouseMoved(MouseEvent e)
 	{

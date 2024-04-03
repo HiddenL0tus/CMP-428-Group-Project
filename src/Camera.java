@@ -1,9 +1,13 @@
-
 public class Camera {
 	
-	static int x;
-	static int y;
+	static int x = 0;
+	static int y = 0;
 	
+	public static void setPosition(int x, int y)
+	{
+		Camera.x = x;
+		Camera.y = y;
+	}
 	
 	public static void moveLT(int dx)
 	{
@@ -25,5 +29,4 @@ public class Camera {
 	{
 		y += dy;
 	}
-
 }

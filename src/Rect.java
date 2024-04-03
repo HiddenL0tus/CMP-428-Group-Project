@@ -1,5 +1,4 @@
-import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.*;
 
 public class Rect {
 	
@@ -15,12 +14,15 @@ public class Rect {
 	
 	boolean held = false;
 	
+	Color c = Color.GREEN;
+	
 	public void physicsOff()
 	{
 		vx = 0;
 		vy = 0;
 		
 		ay = 0;
+		G  = 0;
 	}
 	
 	public Rect(int x, int y, int w, int h)
@@ -217,11 +219,19 @@ public class Rect {
 		y = r.y + r.h + 1;
 	}
 	
-	
+	/*
 	public void draw(Graphics pen)
 	{
 		pen.setColor(Color.GREEN);
 		pen.drawRect(x, y, w, h);
+	}*/
+	
+	//this version subtracts the camera's position
+	public void draw(Graphics pen)
+	{
+		pen.setColor(c);
+		
+		pen.drawRect((int)(x - Camera.x), (int)(y - Camera.y), (int)w, (int)h);
 	}
 	
 	

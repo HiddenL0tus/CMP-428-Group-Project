@@ -4,6 +4,11 @@ import java.awt.event.*;
 
 public class GameS24 extends GameBase {
 	
+	//get the screen width and height of the device being used for camera calculations
+	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+	public static int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
+	public static int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
+	
 	ImageLayer m = new ImageLayer("mountains.gif", 0, 0, 10);
 	ImageLayer h = new ImageLayer("houses.gif", 0, 0, 3);	
 	ImageLayer t = new ImageLayer("trees.gif", 0, 0, 1);
@@ -13,97 +18,84 @@ public class GameS24 extends GameBase {
 	//actions for characters
 	String[] pose = {"dn", "up", "lt", "rt"};
 	
-	Rect2 g = new Rect2(860, 540, 100, 100);
+	Rect player = new Rect(500, 600, 100, 100);
 	
-	Rect2[] wall =
-		{
-			new Rect2(860, 540, 75, 70),
-			new Rect2(1564, 153, 48, 804),
-			new Rect2(630, 155, 923, 32),
-			new Rect2(619, 154, 12, 831),
-			new Rect2(26, 1264, 2519, 40),
-		
-
-		};
-	
-	Rect2[] door = {
-			new Rect2(500,500,300,300)
+	Rect2[] walls =
+	{
+		new Rect2(860, 540, 75, 70),
+		new Rect2(1564, 153, 48, 804),
+		new Rect2(630, 155, 923, 32),
+		new Rect2(619, 154, 12, 831),
+		new Rect2(26, 1264, 2519, 40),
 	};
-
 	
+	Rect2[] doors = 
+	{
+		new Rect2(500,500,300,300)
+	};
+	
+	public void initialize()
+	{
+		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
+				   		   player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
+	}
 	
 	public void inGameLoop()
 	{
 		
-		g.physicsOff();
+		player.physicsOff();
 				
-		//if(UP_Pressed) soldier.jump(25);
-		if(pressing[UP]) g.goUP(5);
-		if(pressing[DN]) g.goDN(5);
-		if(pressing[LT]) g.goLT(5);
-		if(pressing[RT]) g.goRT(5);
-										
-		//if(UP_Pressed) chris.goUP(5);
-		//if(DN_Pressed) chris.goDN(5);
+		if(pressing[UP]) player.goUP(5);
+		if(pressing[DN]) player.goDN(5);
+		if(pressing[LT]) player.goLT(5);
+		if(pressing[RT]) player.goRT(5);					
 				
-		g.move();
+		player.move();
 		
+
+		for(Rect2 wall : walls) if(player.overlaps(wall)) player.pushedOutOf(wall);
 		
-		//if(LT_Pressed)			Camera.moveLT(10);
-		//if(RT_Pressed)			Camera.moveRT(10);
-		
-		//CODE THAT ITERATES THROUGH wall Array AND CHECKS IF CHRIS IS OVERLAPS, THEN PUSHES OUT//
-		for( int i = 0; i < wall.length; i++) 
-		{
-			if(g.overlaps(wall[i])) g.pushedOutOf(wall[i]);	
-		}
-			
+		updateCamera();
 	}
 	
-	
+	public void updateCamera()
+	{
+		//centers the camera on the player
+		int targetX = (int)Math.round(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2));
+	    int targetY = (int)Math.round(player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
+
+	    Camera.setPosition(targetX, targetY); 
+	}
 	
 	public void paint(Graphics pen)
 	{
 		
-		pen.drawImage(testMap, 0, 0, 2560, 1440, null);
+		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
 		
 		m.draw(pen);
 		h.draw(pen);
 		t.draw(pen);
 
-		g.draw(pen);
+		player.draw(pen);
 		
-		//draws wall hitBox
-		for(int i = 0; i < wall.length; i++)
-		{	
-			wall[i].draw(pen);
-		}
+		for(Rect2 wall : walls) wall.draw(pen);
 		
-		for(int i = 0; i < door.length; i++)
-		{	
-			door[i].draw(pen);
-		}
-		
+		for(Rect2 door : doors) door.draw(pen);	
 	}
 	
-	
-	
-	
-	
-	//TOOL FOR SIZING RECTS//
+	//TOOL FOR RESIZING RECTS BEGINS//
 	public void keyTyped(KeyEvent e)
 	{		
 		char keyChar = Character.toLowerCase(e.getKeyChar());
 		
 		if (keyChar == 'p') 
 		{	
-			System.out.println(g); 
+			System.out.println(player); 
 			
-			for (Rect r : wall) System.out.println(r);
+			for (Rect wall : walls) System.out.println(wall);
 		}
 	}
-	
-	//TOOL for RESIZING RECTS//
+
 	public void mouseDragged(MouseEvent e)
 	{
 		int nx = e.getX();
@@ -112,16 +104,16 @@ public class GameS24 extends GameBase {
 		int dx = nx - mx;
 		int dy = ny - my;
 		
-		for(int i = 0; i < wall.length; i++) {
-			if(wall[i].resizer.held)  wall[i].resizeBy(dx,  dy);
-		else
-		if(wall[i].held)  wall[i].moveBy(dx, dy);
+		for(Rect2 wall : walls) 
+		{	
+			if(wall.resizer.held) wall.resizeBy(dx,  dy);
+			else if(wall.held) wall.moveBy(dx, dy);
 		}
 		
-		for(int i = 0; i < door.length; i++) {
-			if(door[i].resizer.held)  door[i].resizeBy(dx,  dy);
-		else
-		if(door[i].held)  door[i].moveBy(dx, dy);
+		for(Rect2 door : doors) 
+		{
+			if(door.resizer.held) door.resizeBy(dx,  dy);
+			else if(door.held) door.moveBy(dx, dy);
 		}
 		
 		mx = nx;
@@ -133,33 +125,38 @@ public class GameS24 extends GameBase {
 		mx = e.getX();
 		my = e.getY();
 		
-		for(int i = 0; i <wall.length; i++) {
-		if(wall[i].contains(mx,  my))  wall[i].grabbed();
-		if(wall[i].resizer.contains(mx,  my))  wall[i].resizer.grabbed();
+		for(Rect2 wall : walls) 
+		{
+			if(wall.contains(mx,  my)) wall.grabbed();	
+			if(wall.resizer.contains(mx,  my)) wall.resizer.grabbed();
 		}
 		
-		for(int i = 0; i <door.length; i++) {
-		if(door[i].contains(mx,  my))  door[i].grabbed();
-		if(door[i].resizer.contains(mx,  my))  door[i].resizer.grabbed();
+		for(Rect2 door : doors) 
+		{
+			if(door.contains(mx,  my)) door.grabbed();
+			if(door.resizer.contains(mx,  my))  door.resizer.grabbed();
 		}
 		
 	}
 	
-	public void mouseReleased(MouseEvent e) {
-		
-		for(int i= 0; i < wall.length; i++) {
-		wall[i].dropped();
-		wall[i].resizer.dropped();
+	public void mouseReleased(MouseEvent e) 
+	{
+		for(Rect2 wall : walls) 
+		{
+			wall.dropped();
+			wall.resizer.dropped();
 		}
 		
-		for(int i= 0; i < door.length; i++) {
-		door[i].dropped();
-		door[i].resizer.dropped();
+		for(Rect2 door: doors) 
+		{
+			door.dropped();
+			door.resizer.dropped();
 		}
 	}
-	//TOOL for RESIZING RECTS//
+	//TOOL for RESIZING RECTS ENDS//
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) 
+	{
 		
 	}
 
