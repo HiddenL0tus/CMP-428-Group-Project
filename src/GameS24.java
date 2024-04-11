@@ -4,23 +4,36 @@ import java.awt.event.*;
 
 public class GameS24 extends GameBase {
 	
+	private SpriteManager spriteManager = new SpriteManager();
+	
 	//get the screen width and height of the device being used for camera calculations
 	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 	public static final int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
 	public static final int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
 	
 	//actions for characters
-	String[] pose = {"dn", "up", "lt", "rt"};
+	String[] pose = {"LT", "RT","atkLT", "atkRT"};
+	String[] poseMonster = {"LT", "RT"};
+	int[] count = {6,6,6,6};
+	int[] countMonster = {6,6};
 	
 	Image testMap;
-	Rect player;
+	//Rect player;
 	Rect2[] walls, doors;
+	
+	Sprite player;
+	int currentAnimation = 0;
+	private Rect attackHitbox; // Variable to hold the attack hitbox
+	
+	Sprite orc;
 	
 	public void initialize()
 	{	
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
 		
-		player = new Rect(500, 600, 100, 100);
+		player = new Sprite("Knight", pose, 1200, 1200, count, 10, 20, spriteManager);
+		orc = new Sprite("Orc", poseMonster, 600, 600, countMonster, 10, 10, spriteManager);
+		
 		
 		walls = new Rect2[]
 				{
@@ -44,15 +57,81 @@ public class GameS24 extends GameBase {
 		
 		player.physicsOff();
 				
-		if(pressing[UP]) player.goUP(5);
-		if(pressing[DN]) player.goDN(5);
-		if(pressing[LT]) player.goLT(5);
-		if(pressing[RT]) player.goRT(5);					
+		if(pressing[LT] ) {
+			player.goLT(5);
+			currentAnimation = 0;
+		}
+		if(pressing[RT]) {
+			player.goRT(5);
+			currentAnimation = 1;
+		}
+		if(pressing[DN]) {
+			player.goDN(5);
+		}
+		if(pressing[UP]) {
+			player.goUP(5);
+		}
+		
+		if(!pressing[_Z]) {
+			attackHitbox = null; // Reset the attack hitbox
+		}
+		
+		
+		
+		if(pressing[_Z] && currentAnimation==0) {
+			player.atkLT();
+			if (attackHitbox == null) {
+                attackHitbox = new Rect(player.x - player.w, player.y, player.w, player.h); // Example dimensions
+            }
+			else {
+	            attackHitbox = null; // Reset the attack hitbox when not attacking
+	        }
+		}
+		if(pressing[_Z] && currentAnimation==1) {
+			player.atkRT();
+			if (attackHitbox == null) {
+                attackHitbox = new Rect(player.x + player.w, player.y, player.w, player.h); // Example dimensions
+            }
+			else {
+	            attackHitbox = null; // Reset the attack hitbox when not attacking
+	        }
+		}
+		if(pressing[_Z] && currentAnimation==2)  {
+			player.atkDN();
+			if (attackHitbox == null) {
+                attackHitbox = new Rect(player.x, player.y + player.w, player.w, player.h); // Example dimensions
+            }
+			else {
+	            attackHitbox = null; // Reset the attack hitbox when not attacking
+	        }
+		}
+		if(pressing[_Z] && currentAnimation==3)  {
+			player.atkUP();
+			if (attackHitbox == null) {
+                attackHitbox = new Rect(player.x, player.y - player.h, player.w, player.h); // Example dimensions
+            }
+			else {
+	            attackHitbox = null; // Reset the attack hitbox when not attacking
+	        }
+		}
+		
+		if (attackHitbox != null) {
+			if (attackHitbox.overlaps(orc)) {
+				if (!orc.takeDamage(1)) { //if orc health drops to 0, evals as false but is negated and set to true(b/c its true it executes next code
+					spriteManager.removeSprite(orc); // Remove the sprite if it's dead
+					}
+				}
+			}
+			
+		
+		
 				
 		player.move();
+		orc.chase(player, 1);
 		
 
 		for(Rect2 wall : walls) if(player.overlaps(wall)) player.pushedOutOf(wall);
+		
 		
 		updateCamera();
 	}
@@ -71,7 +150,17 @@ public class GameS24 extends GameBase {
 		
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
 
-		player.draw(pen);
+		//Draws all the sprites in the spriteManager List
+		for (Sprite sprite : spriteManager.getSprites()) {
+			sprite.draw(pen);
+			
+		}
+		
+		// Draw attack hitbox if exists
+        if (attackHitbox != null) {
+            pen.setColor(Color.RED);
+            pen.drawRect(attackHitbox.x, attackHitbox.y, attackHitbox.w, attackHitbox.h);
+        }
 		
 		for(Rect2 wall : walls) wall.draw(pen);
 		
