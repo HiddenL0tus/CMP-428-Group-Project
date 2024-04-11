@@ -20,20 +20,20 @@ public class GameS24 extends GameBase {
 	{	
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
 		
-		player = new Rect(500, 600, 100, 100);
+		player  = new Rect(500, 600, 100, 100);
 		
-		walls = new Rect2[]
-				{
-					new Rect2(860, 540, 75, 70),
-					new Rect2(1564, 153, 48, 804),
-					new Rect2(630, 155, 923, 32),
-					new Rect2(619, 154, 12, 831),
-					new Rect2(26, 1264, 2519, 40),	
-				};
-		doors = new Rect2[]
-				{
-					new Rect2(500,500,300,300)
-				};
+		walls   = new Rect2[]
+		{
+			new Rect2(860, 540, 75, 70),
+			new Rect2(1564, 153, 48, 804),
+			new Rect2(630, 155, 923, 32),
+			new Rect2(619, 154, 12, 831),
+			new Rect2(26, 1264, 2519, 40),	
+		};
+		doors   = new Rect2[]
+		{
+			new Rect2(500,500,300,300)
+		};
 		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
 				   		   player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
@@ -131,7 +131,6 @@ public class GameS24 extends GameBase {
 			if(door.contains(mx,  my)) door.grabbed();
 			if(door.resizer.contains(mx,  my))  door.resizer.grabbed();
 		}
-		
 	}
 	
 	public void mouseReleased(MouseEvent e) 
