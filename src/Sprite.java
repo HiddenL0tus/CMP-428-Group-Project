@@ -1,4 +1,5 @@
 import java.awt.Graphics;
+import java.awt.Image;
 
 public class Sprite extends Rect2 {
 	
@@ -6,6 +7,7 @@ public class Sprite extends Rect2 {
 	int[] animationFrames;
 	private HealthState health;
 	private SpriteManager spriteManager;
+	public Rect hurtbox;
 		
 		//the number indicates the action that we chose to store in that element of the array
 		int action = 0;
@@ -15,9 +17,9 @@ public class Sprite extends Rect2 {
 		
 		
 		//change count to an array when animations have different # of images, to store the amount of images int[] count
-		public Sprite(String name, String[] pose, int x, int y, int[] count, int duration, int maxHealth, SpriteManager spriteManager)
+		public Sprite(String name, String[] pose, int x, int y, int w, int h, int[] count, int duration, int maxHealth, SpriteManager spriteManager)
 		{
-			super(x, y, 45, 45);
+			super(x, y, w, h);
 			
 			//length = amount of total poses, movement, attacking etc 
 			animation = new Animation[pose.length];
@@ -74,30 +76,21 @@ public class Sprite extends Rect2 {
 		public void atkLT()
 		{
 			action = 0;
-			
-			moving = true;
 		}
 		
 		public void atkRT()
 		{
 			action = 1;
-			
-			moving = true;
 		}
 		
 		public void atkDN()
 		{
-			//action = 2;
-			
-			moving = true;
-			
+			//action = 2;	
 		}
 		
 		public void atkUP()
 		{
 			//action = 3;
-			
-			moving = true;
 		}
 		
 		public boolean takeDamage(int damageAmount) {
@@ -111,45 +104,17 @@ public class Sprite extends Rect2 {
 	        else return true;
 	    }
 		
-		
-
-		
-
-		
-		
 		public void draw(Graphics pen)
-		{	
-			
-			
-			//idle character logic
-			if(!moving)
-			{
-				//pen.drawImage(animation[action].stillImage(), x, y, w, h, null);
-				pen.drawImage(animation[action].stillImage(), x, y, null);
-				
-				
-				
-				
-		
-			}
-			
-			
+		{		
+			if(!moving) //idle character logic
+			{		
+				pen.drawImage(animation[action].stillImage(), x - Camera.x, y - Camera.y, w, h, null);
+			}	
 			else
 			{
-				//pen.drawImage(animation[action].nextImage(), x, y, w, h, null); // this one is scaling the image inside the box
-				pen.drawImage(animation[action].nextImage(), x, y, null); // this one is not scaling but setting the x y to the top of the square
-				
-				
-				
+				pen.drawImage(animation[action].nextImage(), x - Camera.x, y - Camera.y, w, h, null);				
 				moving = false;
 			}
-			
-			
-			
-			
-			//Draws Sprites hitBox
-			pen.drawRect(x, y, w, h);
-			
+			super.draw(pen); //Draws Sprites hurtbox
 		}
-
 }
