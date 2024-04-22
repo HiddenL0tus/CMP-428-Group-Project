@@ -35,6 +35,12 @@ public class Rect {
 
 	}
 	
+	public void setSize(int w, int h)
+	{
+		this.w = w;
+		this.h = h;
+	}
+	
 	public void setVelocity(double vx, double vy)
 	{
 		this.vx = vx;
@@ -111,10 +117,10 @@ public class Rect {
 	
 	public void evade(Rect r, int dx)
 	{
-		if(isLeftOf(r))   goLT(dx); 
-		if(isRightOf(r))  goRT(dx); 
-		if(isAbove(r))    goUP(dx); 
-		if(isBelow(r))    goDN(dx); 
+		if(r.isLeftOf (this)) goRT(dx); 
+		if(r.isRightOf(this)) goLT(dx); 
+		if(r.isAbove  (this)) goDN(dx); 
+		if(r.isBelow  (this)) goUP(dx); 
 		
 		move();
 	}
@@ -160,9 +166,9 @@ public class Rect {
 	
 	public void pushedOutOf(Rect r)
 	{
-		if(cameFromAbove(r)) 	pushbackUpFrom(r);
-		if(cameFromBelow(r))    pushbackDownFrom(r);
-		if(cameFromLeftOf(r))   pushbackLeftFrom(r);		
+		if(cameFromAbove  (r)) 	pushbackUpFrom   (r);
+		if(cameFromBelow  (r))  pushbackDownFrom (r);
+		if(cameFromLeftOf (r))  pushbackLeftFrom (r);		
 		if(cameFromRightOf(r))	pushbackRightFrom(r);
 		
 		vx *= F;
@@ -194,7 +200,7 @@ public class Rect {
 	
 	public boolean cameFromBelow(Rect r)
 	{
-		return r.y + r.h < y - vy;
+		return y - vy > r.y + r.h;
 	}
 	
 	public void pushbackLeftFrom(Rect r)
@@ -217,6 +223,8 @@ public class Rect {
 	public void pushbackDownFrom(Rect r)
 	{
 		y = r.y + r.h + 1;
+		
+		vy = 0;
 	}
 	
 	/*

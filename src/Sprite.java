@@ -1,27 +1,42 @@
 import java.awt.Graphics;
+import java.awt.Image;
 
 public class Sprite extends Rect2 {
 	
 	Animation[] animation;
-	
-	//the number indicates the action that we chose to store in that element of the array
+	int[] animationFrames;
+	private HealthState health;
+	private SpriteManager spriteManager;
+	public Rect hurtbox;
+		
+		//the number indicates the action that we chose to store in that element of the array
 		int action = 0;
+		
 		
 		boolean moving = false;
 		
 		
 		//change count to an array when animations have different # of images, to store the amount of images int[] count
-		public Sprite(String name, String[] pose, int x, int y, int count, int duration)
+		public Sprite(String name, String[] pose, int x, int y, int w, int h, int[] count, int duration, int maxHealth, SpriteManager spriteManager)
 		{
-			super(x, y, 75, 70);
+			super(x, y, w, h);
 			
 			//length = amount of total poses, movement, attacking etc 
 			animation = new Animation[pose.length];
+			animationFrames = new int[pose.length];
 			
 			for(int i = 0; i < animation.length; i++)
 			{
-				animation[i] = new Animation(name + "_" + pose[i], count, duration);
+				animationFrames[i] = count[i]; 
+				animation[i] = new Animation(name + "_" + pose[i], animationFrames[i], duration);
 			}
+			
+			this.health = new HealthState(maxHealth);
+			
+			// Add this sprite to the sprite manager
+			this.spriteManager = spriteManager;
+			spriteManager.addSprite(this);
+			
 			
 		}
 		
@@ -29,7 +44,7 @@ public class Sprite extends Rect2 {
 		{
 			super.goLT(dx);
 			
-			action = 2;
+			action = 0;
 			
 			moving = true;
 		}
@@ -38,47 +53,68 @@ public class Sprite extends Rect2 {
 		{
 			super.goRT(dx);
 
-			action = 3;
+			action = 1;
 
 			moving = true;
 		}
 		
-		public void goUP(int dy)
-		{
-			super.goUP(dy);
-
-			action = 1;
-			
-			moving = true;
-		}
 		public void goDN(int dy)
 		{
 			super.goDN(dy);
 
-			action = 0;
-
 			moving = true;
 		}
 		
 		
+		public void goUP(int dy)
+		{
+			super.goUP(dy);
 		
+			moving = true;
+		}
+			
+		public void atkLT()
+		{
+			action = 0;
+		}
+		
+		public void atkRT()
+		{
+			action = 1;
+		}
+		
+		public void atkDN()
+		{
+			//action = 2;	
+		}
+		
+		public void atkUP()
+		{
+			//action = 3;
+		}
+		
+		public boolean takeDamage(int damageAmount) {
+			
+	        health.takeDamage(damageAmount);
+	        
+	        if (!health.isAlive()) {
+	            // Handle sprite death
+	            return false;
+	        }
+	        else return true;
+	    }
 		
 		public void draw(Graphics pen)
-		{	
-			//idle character logic
-			if(!moving)
-			{
+		{		
+			if(!moving) //idle character logic
+			{		
 				pen.drawImage(animation[action].stillImage(), x - Camera.x, y - Camera.y, w, h, null);
-			}
+			}	
 			else
 			{
-				pen.drawImage(animation[action].nextImage(), x - Camera.x, y - Camera.y, w, h, null);
-				
+				pen.drawImage(animation[action].nextImage(), x - Camera.x, y - Camera.y, w, h, null);				
 				moving = false;
 			}
-			
-			//Draws Sprites hitBox
-			//pen.drawRect(x, y, w, h);
+			super.draw(pen); //Draws Sprites hurtbox
 		}
-
 }
