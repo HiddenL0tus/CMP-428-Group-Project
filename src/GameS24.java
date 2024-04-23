@@ -1,52 +1,62 @@
 import java.applet.Applet;
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 
-public class GameS24 extends GameBase {
-	
-	private SpriteManager spriteManager = new SpriteManager();
+public class GameS24 extends GameBase 
+{
+	private ArrayList<Sprite> goodies     = new ArrayList<>();
+	private ArrayList<Sprite> baddies     = new ArrayList<>();
+	private ArrayList<Rect> projectiles   = new ArrayList<>();
 	
 	//get the screen width and height of the device being used for camera calculations
 	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
 	public static final int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
 	public static final int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
 	
-	//actions for characters
-	String[] pose = {"LT", "RT","atkLT", "atkRT"};
-	String[] poseMonster = {"LT", "RT"};
-	int[] count = {6,6,6,6};
-	int[] countMonster = {6,6};
-	
 	Image testMap;
-	//Rect player;
 	Rect2[] walls, doors;
 	
-	Sprite player;
-	int currentAnimation = 0;
-	private Rect attackHitbox; // Variable to hold the attack hitbox
+	Player player;
+	Orc[] orcList;
 	
-	Sprite orc;
+	boolean attackEnabled;
+	
+	
 	
 	public void initialize()
 	{	
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
-
-		player = new Sprite("Knight", pose       , 1200, 1200, 38, 37, count       , 10,  2, spriteManager);
-		orc    = new Sprite("Orc"   , poseMonster,  600,  600, 38, 37, countMonster, 10, 10, spriteManager);
 		
-		walls = new Rect2[]
+		player  = new Player(1200, 1200);
+			
+		orcList = new Orc[] //it's easy to add more Orcs!
 		{
-				new Rect2( 860,  540,   75,  70),
-				new Rect2(1564,  153,   48, 804),
-				new Rect2( 630,  155,  923,  32),
-				new Rect2( 619,  154,   12, 831),
-				new Rect2(  26, 1264, 2519,  40),	
+			new Orc(600, 600),
+			new Orc(200, 200),
+			new Orc(800, 800),
+			new Orc(1000, 1000),
 		};
 		
-		doors = new Rect2[]
+		attackEnabled = true;
+		
+		goodies.add(player);
+		
+		for (Orc orcBaddy : orcList) baddies.add(orcBaddy);
+		
+		walls   = new Rect2[]
 		{
-				new Rect2( 500, 500, 300, 300)
-
+			new Rect2( 860,  540,   75,  70),
+			new Rect2(1564,  153,   48, 804),
+			new Rect2( 630,  155,  923,  32),
+			new Rect2( 619,  154,   12, 831),
+			new Rect2(  26, 1264, 2519,  40),	
+		};
+		
+		doors   = new Rect2[]
+		{
+			new Rect2( 500, 500, 300, 300)
 		};
 		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
@@ -54,49 +64,22 @@ public class GameS24 extends GameBase {
 	}
 	
 	public void inGameLoop()
-	{
-		
+	{	
 		player.physicsOff();
 				
 		controlMovement();
-	
-		attackHitbox = null; // Reset the attack hitbox
 		
-		if(pressing[_A]) {
-			player.atkLT();
-			attackHitbox = new Rect(player.x - player.w, player.y, player.w, player.h); // Example dimensions   
-		}
-		if(pressing[_D]) {
-			player.atkRT();
-			attackHitbox = new Rect(player.x + player.w, player.y, player.w, player.h); // Example dimensions
-		}
-		if(pressing[_S])  {
-			player.atkDN();
-			attackHitbox = new Rect(player.x, player.y + player.w, player.w, player.h); // Example dimensions
-		}
-		if(pressing[_W])  {
-			player.atkUP();
-			attackHitbox = new Rect(player.x, player.y - player.h, player.w, player.h); // Example dimensions   
-		}
+		controlAttack();
 		
-		if (attackHitbox != null && attackHitbox.overlaps(orc)) 
-		{
-				boolean alive = orc.takeDamage(1);  //if orc health drops to 0, evals as false but is negated and set to true(b/c its true it executes next code
-				if (!alive) spriteManager.removeSprite(orc); // Remove the sprite if it's dead			
-		}
+		playerDamagesBaddies(1);
 		
-		//orc chase and evade logic
-		int speed = 1;
-		
-		int orcToPlayerDistance = Math.abs(player.x - orc.x) + Math.abs(player.y - orc.y);
-		
-		if (orcToPlayerDistance < 180) orc.evade(player, speed * 2);
-		
-		else orc.chase(player, speed);
+		enemiesChaseAndEvadePlayer();
 		
 		player.move();
 		
-		for(Rect2 wall : walls) if(player.overlaps(wall)) player.pushedOutOf(wall);
+		for (Rect projectile : projectiles) projectile.move();
+		
+		for (Rect2 wall : walls) if (player.overlaps(wall)) player.pushedOutOf(wall);
 		
 		updateCamera();
 	}
@@ -121,25 +104,100 @@ public class GameS24 extends GameBase {
 		if(pressing[UP]) player.goUP(moveSpeed);
 	}
 	
+	public void controlAttack()
+	{
+		if (!pressing[_W] && !pressing[_A] && !pressing[_S] && !pressing[_D])
+		{
+			attackEnabled = true;
+		}
+		if(attackEnabled && pressing[_A]) {
+			player.atkLT();
+			
+			Rect pellet = new Rect(player.x - player.w, player.y, player.w, player.h, Color.RED);
+			pellet.setVelocity(-4, 0);
+			
+			projectiles.add(pellet);
+			attackEnabled = false;
+		}
+		if(attackEnabled && pressing[_D]) {
+			player.atkRT();
+			
+			Rect pellet =  new Rect(player.x + player.w, player.y, player.w, player.h, Color.RED);
+			pellet.setVelocity(4, 0);
+			
+			projectiles.add(pellet);
+			attackEnabled = false;
+		}
+		if(attackEnabled && pressing[_S])  {
+			player.atkDN();
+			
+			Rect pellet = new Rect(player.x, player.y + player.w, player.w, player.h, Color.RED);
+			pellet.setVelocity(0, 4);
+			
+			projectiles.add(pellet); 
+			attackEnabled = false;
+		}
+		if(attackEnabled && pressing[_W])  {
+			
+			player.atkUP();
+			
+			Rect pellet = new Rect(player.x, player.y - player.h, player.w, player.h, Color.RED);
+			pellet.setVelocity(0, -4);
+			
+			projectiles.add(pellet); 
+			attackEnabled = false;
+		}
+	}
+	
+	public void playerDamagesBaddies(int amount)
+	{
+		/* attempting to modify the list (via removing elements)
+		 * while iterating over it requires an iterator for safe removal */
+		
+		Iterator<Sprite> iterator = baddies.iterator();
+		while (iterator.hasNext()) 
+		{
+			Sprite baddy = iterator.next();
+			
+			for (Rect projectile : projectiles) if (projectile.overlaps(baddy))
+			{
+				baddy.takeDamage(amount);
+				if (baddy.health.isDead())
+				{
+					iterator.remove(); //removes the enemy from the baddies list
+					break; //do not continue checking projectiles against the removed baddy
+				}
+			}	
+		}
+	}
+	
+	public void enemiesChaseAndEvadePlayer()
+	{
+		for (Sprite enemy : baddies)
+		{
+			int speed = 1;
+			
+			int enemyToPlayerDistance = Math.abs(player.x - enemy.x) + Math.abs(player.y - enemy.y);
+			
+			if (enemyToPlayerDistance < 180) enemy.evade(player, speed * 2);
+			
+			else enemy.chase(player, speed);
+		}
+	}
+	
 	public void paint(Graphics pen)
 	{
-		
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
-
-		//Draws all the sprites in the spriteManager List
-		for (Sprite sprite : spriteManager.getSprites()) {
-			sprite.draw(pen);	
-		}
 		
-		// Draw attack hitbox if exists
-        if (attackHitbox != null) {
-            pen.setColor(Color.RED);
-            pen.drawRect(attackHitbox.x - Camera.x, attackHitbox.y - Camera.y, attackHitbox.w, attackHitbox.h);
-        }
+		for (Sprite goody : goodies) goody.draw(pen); //Draws all the sprites in the goodies List
+			
+		for (Sprite baddy : baddies) baddy.draw(pen); //Draws all the sprites in the baddies List
 		
-		for(Rect2 wall : walls) wall.draw(pen);
+        for (Rect projectile : projectiles) projectile.draw(pen);
+        
+		for (Rect2 wall : walls) wall.draw(pen);
 		
-		for(Rect2 door : doors) door.draw(pen);	
+		for (Rect2 door : doors) door.draw(pen);	
 	}
 	
 	//TOOL FOR RESIZING RECTS BEGINS//

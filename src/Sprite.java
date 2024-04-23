@@ -5,19 +5,16 @@ public class Sprite extends Rect2 {
 	
 	Animation[] animation;
 	int[] animationFrames;
-	private HealthState health;
-	private SpriteManager spriteManager;
+	public HealthState health;
 	public Rect hurtbox;
 		
 		//the number indicates the action that we chose to store in that element of the array
 		int action = 0;
 		
-		
 		boolean moving = false;
 		
-		
 		//change count to an array when animations have different # of images, to store the amount of images int[] count
-		public Sprite(String name, String[] pose, int x, int y, int w, int h, int[] count, int duration, int maxHealth, SpriteManager spriteManager)
+		public Sprite(String name, String[] pose, int x, int y, int w, int h, int[] count, int duration, int maxHealth)
 		{
 			super(x, y, w, h);
 			
@@ -32,12 +29,6 @@ public class Sprite extends Rect2 {
 			}
 			
 			this.health = new HealthState(maxHealth);
-			
-			// Add this sprite to the sprite manager
-			this.spriteManager = spriteManager;
-			spriteManager.addSprite(this);
-			
-			
 		}
 		
 		public void goLT(int dx)
@@ -93,15 +84,9 @@ public class Sprite extends Rect2 {
 			//action = 3;
 		}
 		
-		public boolean takeDamage(int damageAmount) {
-			
+		public void takeDamage(int damageAmount) 
+		{	
 	        health.takeDamage(damageAmount);
-	        
-	        if (!health.isAlive()) {
-	            // Handle sprite death
-	            return false;
-	        }
-	        else return true;
 	    }
 		
 		public void draw(Graphics pen)

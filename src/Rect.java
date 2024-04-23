@@ -14,7 +14,7 @@ public class Rect {
 	
 	boolean held = false;
 	
-	Color c = Color.GREEN;
+	Color c;
 	
 	public void physicsOff()
 	{
@@ -27,12 +27,16 @@ public class Rect {
 	
 	public Rect(int x, int y, int w, int h)
 	{
+		this(x, y, w, h, Color.GREEN);
+	}
+	
+	public Rect(int x, int y, int w, int h, Color c)
+	{
 		this.x = x;
-		this.y = y;
-		
+		this.y = y;	
 		this.w = w;
 		this.h = h;
-
+		this.c = c;
 	}
 	
 	public void setSize(int w, int h)
