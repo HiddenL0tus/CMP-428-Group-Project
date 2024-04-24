@@ -1,3 +1,4 @@
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Image;
 
@@ -7,6 +8,8 @@ public class Sprite extends Rect2 {
 	int[] animationFrames;
 	public HealthState health;
 	public Rect hurtbox;
+	public Rect meleeHitbox   = null; //each sprite can have one melee hitbox
+	public boolean atkEnabled = true;
 		
 		//the number indicates the action that we chose to store in that element of the array
 		int action = 0;
@@ -63,25 +66,70 @@ public class Sprite extends Rect2 {
 		
 			moving = true;
 		}
-			
+		
+		//melee attacks need no cooldown
 		public void atkLT()
 		{
 			action = 0;
+			
+			meleeHitbox = new Rect(x - w, y, w, h, Color.RED);
 		}
 		
 		public void atkRT()
 		{
 			action = 1;
-		}
-		
-		public void atkDN()
-		{
-			//action = 2;	
+			
+			meleeHitbox = new Rect(x + w, y, w, h, Color.RED);
 		}
 		
 		public void atkUP()
 		{
+			//action = 0;
+			
+			meleeHitbox = new Rect(x, y - h, w, h, Color.RED);
+		}
+		
+		public void atkDN()
+		{
+			//action = 0;
+			
+			meleeHitbox = new Rect(x, y + w, w, h, Color.RED);
+		}
+			
+		public Rect shootLT(double velocity)
+		{
+			action = 0;
+			
+			atkEnabled = false;
+			
+			return new Rect(x - w, y, w, h, Color.RED, -velocity, 0);
+		}
+		
+		public Rect shootRT(double velocity)
+		{
+			action = 1;
+			
+			atkEnabled = false;
+			
+			return new Rect(x + w, y, w, h, Color.RED, velocity, 0);
+		}
+		
+		public Rect shootUP(double velocity)
+		{
 			//action = 3;
+			
+			atkEnabled = false;
+			
+			return new Rect(x, y - h, w, h, Color.RED, 0, -velocity);
+		}
+		
+		public Rect shootDN(double velocity)
+		{
+			//action = 2;	
+			
+			atkEnabled = false;
+			
+			return new Rect(x, y + w, w, h, Color.RED, 0, velocity);
 		}
 		
 		public void takeDamage(int damageAmount) 

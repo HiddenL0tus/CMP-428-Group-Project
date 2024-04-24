@@ -4,8 +4,7 @@ public class Rect {
 	
 	int x, y, w, h;
 	
-	double vx = 0;
-	double vy = 0;
+	double vx, vy;
 	
 	double ay = G;
 	
@@ -32,11 +31,17 @@ public class Rect {
 	
 	public Rect(int x, int y, int w, int h, Color c)
 	{
+		this(x, y, w, h, c, 0, 0);
+	}
+	
+	public Rect(int x, int y, int w, int h, Color c, double vx, double vy)
+	{
 		this.x = x;
 		this.y = y;	
 		this.w = w;
 		this.h = h;
-		this.c = c;
+		this.c = c;	
+		setVelocity(vx, vy);
 	}
 	
 	public void setSize(int w, int h)

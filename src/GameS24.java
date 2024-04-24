@@ -6,9 +6,9 @@ import java.util.Iterator;
 
 public class GameS24 extends GameBase 
 {
-	private ArrayList<Sprite> goodies     = new ArrayList<>();
-	private ArrayList<Sprite> baddies     = new ArrayList<>();
-	private ArrayList<Rect> projectiles   = new ArrayList<>();
+	private ArrayList<Sprite> goodies;
+	private ArrayList<Sprite> baddies;
+	private ArrayList< Rect > playerProjectiles;
 	
 	//get the screen width and height of the device being used for camera calculations
 	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
@@ -21,13 +21,15 @@ public class GameS24 extends GameBase
 	Player player;
 	Orc[] orcList;
 	
-	boolean attackEnabled;
-	
-	
+	String attackMode = "";
 	
 	public void initialize()
 	{	
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
+		
+		goodies           = new ArrayList<>();
+		baddies           = new ArrayList<>();
+		playerProjectiles = new ArrayList<>();
 		
 		player  = new Player(1200, 1200);
 			
@@ -38,8 +40,6 @@ public class GameS24 extends GameBase
 			new Orc(800, 800),
 			new Orc(1000, 1000),
 		};
-		
-		attackEnabled = true;
 		
 		goodies.add(player);
 		
@@ -66,18 +66,21 @@ public class GameS24 extends GameBase
 	public void inGameLoop()
 	{	
 		player.physicsOff();
-				
+		
+		if (pressing[_1]) attackMode = "melee";
+		if (pressing[_2]) attackMode = "ranged";
+		
 		controlMovement();
 		
 		controlAttack();
 		
-		playerDamagesBaddies(1);
+		playerDamagesBaddies();
 		
 		enemiesChaseAndEvadePlayer();
 		
 		player.move();
 		
-		for (Rect projectile : projectiles) projectile.move();
+		for (Rect projectile : playerProjectiles) projectile.move();
 		
 		for (Rect2 wall : walls) if (player.overlaps(wall)) player.pushedOutOf(wall);
 		
@@ -98,58 +101,41 @@ public class GameS24 extends GameBase
 		int moveSpeed = 3;
 		if (pressing[SHIFT]) moveSpeed = 5;
 		
-		if(pressing[LT]) player.goLT(moveSpeed);
-		if(pressing[RT]) player.goRT(moveSpeed);
-		if(pressing[DN]) player.goDN(moveSpeed);
-		if(pressing[UP]) player.goUP(moveSpeed);
+		if (pressing[LT]) player.goLT(moveSpeed);
+		if (pressing[RT]) player.goRT(moveSpeed);
+		if (pressing[DN]) player.goDN(moveSpeed);
+		if (pressing[UP]) player.goUP(moveSpeed);
 	}
 	
 	public void controlAttack()
 	{
+		player.meleeHitbox = null; //reset melee hitbox on each tick
+		
 		if (!pressing[_W] && !pressing[_A] && !pressing[_S] && !pressing[_D])
 		{
-			attackEnabled = true;
+			player.atkEnabled = true;
 		}
-		if(attackEnabled && pressing[_A]) {
-			player.atkLT();
+		
+		if (attackMode.equals("melee"))
+		{
+			if (player.atkEnabled && pressing[_W]) player.atkUP();
+			if (player.atkEnabled && pressing[_A]) player.atkLT();
+			if (player.atkEnabled && pressing[_S]) player.atkDN();
+			if (player.atkEnabled && pressing[_D]) player.atkRT();
+		}	
+		
+		if (attackMode.equals("ranged"))
+		{
+			int pelletVelocity = 5;
 			
-			Rect pellet = new Rect(player.x - player.w, player.y, player.w, player.h, Color.RED);
-			pellet.setVelocity(-4, 0);
-			
-			projectiles.add(pellet);
-			attackEnabled = false;
-		}
-		if(attackEnabled && pressing[_D]) {
-			player.atkRT();
-			
-			Rect pellet =  new Rect(player.x + player.w, player.y, player.w, player.h, Color.RED);
-			pellet.setVelocity(4, 0);
-			
-			projectiles.add(pellet);
-			attackEnabled = false;
-		}
-		if(attackEnabled && pressing[_S])  {
-			player.atkDN();
-			
-			Rect pellet = new Rect(player.x, player.y + player.w, player.w, player.h, Color.RED);
-			pellet.setVelocity(0, 4);
-			
-			projectiles.add(pellet); 
-			attackEnabled = false;
-		}
-		if(attackEnabled && pressing[_W])  {
-			
-			player.atkUP();
-			
-			Rect pellet = new Rect(player.x, player.y - player.h, player.w, player.h, Color.RED);
-			pellet.setVelocity(0, -4);
-			
-			projectiles.add(pellet); 
-			attackEnabled = false;
+			if (player.atkEnabled && pressing[_W]) playerProjectiles.add(player.shootUP(pelletVelocity));
+			if (player.atkEnabled && pressing[_A]) playerProjectiles.add(player.shootLT(pelletVelocity));
+			if (player.atkEnabled && pressing[_S]) playerProjectiles.add(player.shootDN(pelletVelocity));
+			if (player.atkEnabled && pressing[_D]) playerProjectiles.add(player.shootRT(pelletVelocity));
 		}
 	}
 	
-	public void playerDamagesBaddies(int amount)
+	public void playerDamagesBaddies()
 	{
 		/* attempting to modify the list (via removing elements)
 		 * while iterating over it requires an iterator for safe removal */
@@ -159,13 +145,25 @@ public class GameS24 extends GameBase
 		{
 			Sprite baddy = iterator.next();
 			
-			for (Rect projectile : projectiles) if (projectile.overlaps(baddy))
+			//melee damage
+			if (player.meleeHitbox != null && player.meleeHitbox.overlaps(baddy))
 			{
-				baddy.takeDamage(amount);
+				baddy.takeDamage(6);
 				if (baddy.health.isDead())
 				{
 					iterator.remove(); //removes the enemy from the baddies list
 					break; //do not continue checking projectiles against the removed baddy
+				}
+			}
+			
+			//projectile damage
+			for (Rect projectile : playerProjectiles) if (projectile.overlaps(baddy))
+			{
+				baddy.takeDamage(1); //i think it does piercing damage
+				if (baddy.health.isDead())
+				{
+					iterator.remove();
+					break;
 				}
 			}	
 		}
@@ -189,11 +187,13 @@ public class GameS24 extends GameBase
 	{
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
 		
+		if (player.meleeHitbox != null) player.meleeHitbox.draw(pen);
+		
 		for (Sprite goody : goodies) goody.draw(pen); //Draws all the sprites in the goodies List
 			
 		for (Sprite baddy : baddies) baddy.draw(pen); //Draws all the sprites in the baddies List
 		
-        for (Rect projectile : projectiles) projectile.draw(pen);
+        for (Rect projectile : playerProjectiles) projectile.draw(pen);
         
 		for (Rect2 wall : walls) wall.draw(pen);
 		
