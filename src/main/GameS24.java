@@ -12,6 +12,7 @@ import engine.Sprite;
 import entity.Entity;
 import entity.Orc;
 import entity.Player;
+import entity.WoodSword;
 
 public class GameS24 extends GameBase 
 {
@@ -29,7 +30,7 @@ public class GameS24 extends GameBase
 	
 	Player player;
 	Orc[] orcList;
-	Sprite sword;
+	WoodSword sword;
 	
 	//public String pose = ""
 	
@@ -44,7 +45,8 @@ public class GameS24 extends GameBase
 		playerProjectiles = new ArrayList<>();
 		
 		player  = new Player(1200, 1200);
-		//sword   = new Sprite("Wood Sword",)
+		
+		sword   = new WoodSword(1200, 1200, 12, 43, "UP");
 			
 		orcList = new Orc[] //it's easy to add more Orcs!
 		{
@@ -125,7 +127,7 @@ public class GameS24 extends GameBase
 	
 	public void controlAttack()
 	{
-		player.meleeHitbox = null; //reset melee hitbox on each tick
+		sword.isVisible = false; //make sword invisible each tick so it doesn't show when you aren't attacking
 		
 		if (!pressing[_W] && !pressing[_A] && !pressing[_S] && !pressing[_D])
 		{
@@ -134,10 +136,23 @@ public class GameS24 extends GameBase
 		
 		if (attackMode.equals("melee"))
 		{
-			if (player.atkEnabled && pressing[_W]) player.atkUP();
-			if (player.atkEnabled && pressing[_A]) player.atkLT();
-			if (player.atkEnabled && pressing[_S]) player.atkDN();
-			if (player.atkEnabled && pressing[_D]) player.atkRT();
+			if (player.atkEnabled && pressing[_W]) //UP
+			{
+				sword.updatePositionRelativeTo(player.x + (player.w / 2), player.y + 10, "UP");
+			}
+			else if (player.atkEnabled && pressing[_S]) //DN
+			{
+				sword.updatePositionRelativeTo(player.x + (player.w / 2), player.y - 10, "DN");
+			}
+			
+			else if (player.atkEnabled && pressing[_A]) //LT
+			{
+				sword.updatePositionRelativeTo(player.x + 10, player.y + (player.h / 2), "LT");
+			}
+			else if (player.atkEnabled && pressing[_D]) //RT
+			{
+				sword.updatePositionRelativeTo(player.x - 10, player.y + (player.h / 2), "RT");
+			}
 		}	
 		
 		if (attackMode.equals("ranged"))
@@ -162,7 +177,7 @@ public class GameS24 extends GameBase
 			Entity baddy = iterator.next();
 			
 			//melee damage
-			if (player.meleeHitbox != null && player.meleeHitbox.overlaps(baddy))
+			if (sword.isVisible && sword.overlaps(baddy))
 			{
 				baddy.takeDamage(6);
 				if (baddy.health.isDead())
@@ -203,8 +218,6 @@ public class GameS24 extends GameBase
 	{
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
 		
-		if (player.meleeHitbox != null) player.meleeHitbox.draw(pen);
-		
 		for (Sprite goody : goodies) goody.draw(pen); //Draws all the sprites in the goodies List
 			
 		for (Sprite baddy : baddies) baddy.draw(pen); //Draws all the sprites in the baddies List
@@ -213,7 +226,9 @@ public class GameS24 extends GameBase
         
 		for (Rect2 wall : walls) wall.draw(pen);
 		
-		for (Rect2 door : doors) door.draw(pen);	
+		for (Rect2 door : doors) door.draw(pen);
+		
+		if (sword.isVisible) sword.draw(pen);
 	}
 	
 	//TOOL FOR RESIZING RECTS BEGINS//

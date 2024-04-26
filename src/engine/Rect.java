@@ -51,6 +51,13 @@ public class Rect {
 		this.h = h;
 	}
 	
+	public void setXYWH(int x, int y, int w, int h)
+	{
+		this.x = x;
+		this.y = y;
+		setSize(w,h);
+	}
+	
 	public void setVelocity(double vx, double vy)
 	{
 		this.vx = vx;
