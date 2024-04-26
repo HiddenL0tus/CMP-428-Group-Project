@@ -1,7 +1,8 @@
+package engine;
 public class Camera {
 	
-	static int x = 0;
-	static int y = 0;
+	public static int x = 0;
+	public static int y = 0;
 	
 	public static void setPosition(int x, int y)
 	{

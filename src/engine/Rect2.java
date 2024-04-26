@@ -1,8 +1,9 @@
+package engine;
 import java.awt.*;
 
 public class Rect2 extends Rect {
 	
-	Rect  resizer;
+	public Rect  resizer;
 	
 	
 	public Rect2(int x, int y, int w, int h)
