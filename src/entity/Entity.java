@@ -8,10 +8,12 @@ public class Entity extends Sprite
 	public HealthState health;
 	public Rect hurtbox;
 	public boolean atkEnabled = true;
-	
+	public int halfW, halfH;
 	
 	public Entity(String name, String[] pose, int x, int y, int w, int h, int[] count, int duration, int maxHealth) {
 		super(name, pose, x, y, w, h, count, duration);
+		halfW = w/2;
+		halfH = h/2;
 		this.health = new HealthState(maxHealth);
 	}
 	

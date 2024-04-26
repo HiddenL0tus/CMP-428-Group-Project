@@ -5,14 +5,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
-import engine.Camera;
-import engine.Rect;
-import engine.Rect2;
-import engine.Sprite;
-import entity.Entity;
-import entity.Orc;
-import entity.Player;
-import entity.WoodSword;
+import engine.*;
+import entity.*;
 
 public class GameS24 extends GameBase 
 {
@@ -32,8 +26,6 @@ public class GameS24 extends GameBase
 	Orc[] orcList;
 	WoodSword sword;
 	
-	//public String pose = ""
-	
 	String attackMode = "";
 	
 	public void initialize()
@@ -44,9 +36,9 @@ public class GameS24 extends GameBase
 		baddies           = new ArrayList<>();
 		playerProjectiles = new ArrayList<>();
 		
-		player  = new Player(1200, 1200);
+		player  = new Player(1300, 1200);
 		
-		sword   = new WoodSword(1200, 1200, 12, 43, "UP");
+		sword   = new WoodSword(1300, 1000, 12, 43, "UP");
 			
 		orcList = new Orc[] //it's easy to add more Orcs!
 		{
@@ -98,10 +90,16 @@ public class GameS24 extends GameBase
 		
 		player.move();
 		
+		if (player.overlaps(sword)) sword.equipped = true;
+		
 		for (Rect projectile : playerProjectiles) projectile.move();
 		
-		for (Rect2 wall : walls) if (player.overlaps(wall)) player.pushedOutOf(wall);
-		
+		for (Rect2 wall : walls)
+		{
+			if (player.overlaps(wall)) player.pushedOutOf(wall);
+			
+			for (Entity baddy : baddies) if (baddy.overlaps(wall)) baddy.pushedOutOf(wall);
+		}
 		updateCamera();
 	}
 	
@@ -119,49 +117,34 @@ public class GameS24 extends GameBase
 		int moveSpeed = 3;
 		if (pressing[SHIFT]) moveSpeed = 5;
 		
+		if (pressing[UP]) player.goUP(moveSpeed);
+		if (pressing[DN]) player.goDN(moveSpeed);
 		if (pressing[LT]) player.goLT(moveSpeed);
 		if (pressing[RT]) player.goRT(moveSpeed);
-		if (pressing[DN]) player.goDN(moveSpeed);
-		if (pressing[UP]) player.goUP(moveSpeed);
 	}
 	
 	public void controlAttack()
 	{
-		sword.isVisible = false; //make sword invisible each tick so it doesn't show when you aren't attacking
+		if (sword.equipped) sword.isVisible = false; //make sword invisible each tick so it doesn't show when you aren't attacking
 		
 		if (!pressing[_W] && !pressing[_A] && !pressing[_S] && !pressing[_D])
 		{
 			player.atkEnabled = true;
 		}
-		
 		if (attackMode.equals("melee"))
 		{
-			if (player.atkEnabled && pressing[_W]) //UP
-			{
-				sword.updatePositionRelativeTo(player.x + (player.w / 2), player.y + 10, "UP");
-			}
-			else if (player.atkEnabled && pressing[_S]) //DN
-			{
-				sword.updatePositionRelativeTo(player.x + (player.w / 2), player.y - 10, "DN");
-			}
-			
-			else if (player.atkEnabled && pressing[_A]) //LT
-			{
-				sword.updatePositionRelativeTo(player.x + 10, player.y + (player.h / 2), "LT");
-			}
-			else if (player.atkEnabled && pressing[_D]) //RT
-			{
-				sword.updatePositionRelativeTo(player.x - 10, player.y + (player.h / 2), "RT");
-			}
-		}	
-		
+				 if (player.atkEnabled && pressing[_W]) sword.updatePositionRelativeTo(player, "UP");
+			else if (player.atkEnabled && pressing[_S]) sword.updatePositionRelativeTo(player, "DN");
+			else if (player.atkEnabled && pressing[_A]) sword.updatePositionRelativeTo(player, "LT");
+			else if (player.atkEnabled && pressing[_D]) sword.updatePositionRelativeTo(player, "RT");	
+		}		
 		if (attackMode.equals("ranged"))
 		{
 			int pelletVelocity = 5;
 			
 			if (player.atkEnabled && pressing[_W]) playerProjectiles.add(player.shootUP(pelletVelocity));
-			if (player.atkEnabled && pressing[_A]) playerProjectiles.add(player.shootLT(pelletVelocity));
 			if (player.atkEnabled && pressing[_S]) playerProjectiles.add(player.shootDN(pelletVelocity));
+			if (player.atkEnabled && pressing[_A]) playerProjectiles.add(player.shootLT(pelletVelocity));
 			if (player.atkEnabled && pressing[_D]) playerProjectiles.add(player.shootRT(pelletVelocity));
 		}
 	}
@@ -177,7 +160,7 @@ public class GameS24 extends GameBase
 			Entity baddy = iterator.next();
 			
 			//melee damage
-			if (sword.isVisible && sword.overlaps(baddy))
+			if (sword.equipped && sword.isVisible && sword.overlaps(baddy))
 			{
 				baddy.takeDamage(6);
 				if (baddy.health.isDead())
@@ -275,7 +258,7 @@ public class GameS24 extends GameBase
 		
 		for(Rect2 wall : walls) 
 		{
-			if(wall.contains(mx,  my)) wall.grabbed();	
+			if(wall.contains(mx,  my)) wall.grabbed();
 			if(wall.resizer.contains(mx,  my)) wall.resizer.grabbed();
 		}
 		
@@ -306,5 +289,4 @@ public class GameS24 extends GameBase
 	{
 		
 	}
-
 }
