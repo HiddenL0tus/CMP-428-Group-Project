@@ -1,5 +1,6 @@
+package entity;
 
-public class Player extends Sprite
+public class Player extends Entity
 {
 	private static String[] pose = {"LT", "RT","atkLT", "atkRT"};
 	

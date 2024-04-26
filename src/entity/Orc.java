@@ -1,5 +1,6 @@
+package entity;
 
-public class Orc extends Sprite
+public class Orc extends Entity
 {
 	private static String[] poseMonster = {"LT", "RT"};
 	

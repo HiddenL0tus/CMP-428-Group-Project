@@ -1,13 +1,19 @@
+package main;
 import java.applet.Applet;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import engine.*;
+import entity.*;
+
+
 public class GameS24 extends GameBase 
 {
-	private ArrayList<Sprite> goodies;
-	private ArrayList<Sprite> baddies;
+	private ArrayList<Entity> goodies;
+	private ArrayList<Entity> baddies;
 	private ArrayList< Rect > playerProjectiles;
 	
 	//get the screen width and height of the device being used for camera calculations
@@ -20,6 +26,13 @@ public class GameS24 extends GameBase
 	
 	Player player;
 	Orc[] orcList;
+	Sprite sword;
+	
+	Potion hp;
+	Key key1;
+	Key key2;
+	
+	//public String pose = ""
 	
 	String attackMode = "";
 	
@@ -27,11 +40,14 @@ public class GameS24 extends GameBase
 	{	
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
 		
+		hp = new Potion("Health", 597, 400);
+		
 		goodies           = new ArrayList<>();
 		baddies           = new ArrayList<>();
 		playerProjectiles = new ArrayList<>();
 		
 		player  = new Player(1200, 1200);
+		//sword   = new Sprite("Wood Sword",)
 			
 		orcList = new Orc[] //it's easy to add more Orcs!
 		{
@@ -47,16 +63,19 @@ public class GameS24 extends GameBase
 		
 		walls   = new Rect2[]
 		{
-			new Rect2( 860,  540,   75,  70),
-			new Rect2(1564,  153,   48, 804),
-			new Rect2( 630,  155,  923,  32),
-			new Rect2( 619,  154,   12, 831),
-			new Rect2(  26, 1264, 2519,  40),	
+				new Rect2(597, 310, 118, 56),
+				new Rect2(435, 707, 159, 146),
+				new Rect2(1359, 565, 64, 122),
+				new Rect2(659, 711, 413, 144),
+				new Rect2(943, 211, 129, 419),
+				new Rect2(533, 1014, 115, 50),
+				new Rect2(945, 962, 261, 150),
+				new Rect2(1059, 963, 151, 343),
 		};
 		
 		doors   = new Rect2[]
 		{
-			new Rect2( 500, 500, 300, 300)
+			//new Rect2( 500, 500, 300, 300)
 		};
 		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
@@ -69,6 +88,10 @@ public class GameS24 extends GameBase
 		
 		if (pressing[_1]) attackMode = "melee";
 		if (pressing[_2]) attackMode = "ranged";
+		
+		if(player.overlaps(hp)) {
+			hp.activate();
+		}
 		
 		controlMovement();
 		
@@ -140,10 +163,10 @@ public class GameS24 extends GameBase
 		/* attempting to modify the list (via removing elements)
 		 * while iterating over it requires an iterator for safe removal */
 		
-		Iterator<Sprite> iterator = baddies.iterator();
+		Iterator<Entity> iterator = baddies.iterator();
 		while (iterator.hasNext()) 
 		{
-			Sprite baddy = iterator.next();
+			Entity baddy = iterator.next();
 			
 			//melee damage
 			if (player.meleeHitbox != null && player.meleeHitbox.overlaps(baddy))
@@ -187,6 +210,8 @@ public class GameS24 extends GameBase
 	{
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
 		
+		hp.draw(pen);
+		
 		if (player.meleeHitbox != null) player.meleeHitbox.draw(pen);
 		
 		for (Sprite goody : goodies) goody.draw(pen); //Draws all the sprites in the goodies List
@@ -215,8 +240,8 @@ public class GameS24 extends GameBase
 
 	public void mouseDragged(MouseEvent e)
 	{
-		int nx = e.getX();
-		int ny = e.getY();
+		int nx = e.getX() + Camera.x;
+		int ny = e.getY() + Camera.y;
 		
 		int dx = nx - mx;
 		int dy = ny - my;
@@ -239,8 +264,8 @@ public class GameS24 extends GameBase
 	
 	public void mousePressed(MouseEvent e)
 	{
-		mx = e.getX();
-		my = e.getY();
+		mx = e.getX() + Camera.x;
+		my = e.getY() + Camera.y;
 		
 		for(Rect2 wall : walls) 
 		{

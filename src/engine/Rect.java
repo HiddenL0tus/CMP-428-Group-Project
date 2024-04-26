@@ -1,8 +1,9 @@
+package engine;
 import java.awt.*;
 
 public class Rect {
 	
-	int x, y, w, h;
+	public int x, y, w, h;
 	
 	double vx, vy;
 	
@@ -11,7 +12,7 @@ public class Rect {
 	static double G = .7;
 	static double F = .6;
 	
-	boolean held = false;
+	public boolean held = false;
 	
 	Color c;
 	

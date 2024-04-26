@@ -1,3 +1,4 @@
+package main;
 import java.applet.Applet;
 import java.awt.*;
 import java.awt.event.*;
@@ -145,7 +146,7 @@ public abstract class GameBase extends Applet implements Runnable, KeyListener, 
 		//Every image has its own graphics object
 		offScreenImg = createImage(2560, 1440);
 		offScreenPen = offScreenImg.getGraphics();
-	
+		
 		addKeyListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
