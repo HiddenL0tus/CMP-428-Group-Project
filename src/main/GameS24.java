@@ -17,9 +17,13 @@ public class GameS24 extends GameBase
 	private ArrayList< Rect > playerProjectiles;
 	
 	//get the screen width and height of the device being used for camera calculations
-	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-	public static final int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
-	public static final int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
+	public static GraphicsDevice gd;
+	public static int toolBarHeight = 0;
+	public static int bottomBarHeight = 0;
+		
+	public static int SCREEN_WIDTH;
+	public static int SCREEN_HEIGHT;
+	
 	
 	Image testMap;
 	Rect2[] walls, doors;
@@ -32,15 +36,24 @@ public class GameS24 extends GameBase
 	Key key1;
 	Key key2;
 	
+	UI inventory;
+	
 	//public String pose = ""
 	
 	String attackMode = "";
 	
 	public void initialize()
 	{	
+		gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		SCREEN_WIDTH = gd.getDisplayMode().getWidth();
+		SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
+		toolBarHeight = getInsets().top;
+		bottomBarHeight = getInsets().bottom;
+		
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
 		
 		hp = new Potion("Health", 597, 400);
+		inventory = new UI(this);
 		
 		goodies           = new ArrayList<>();
 		baddies           = new ArrayList<>();
@@ -80,6 +93,8 @@ public class GameS24 extends GameBase
 		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
 				   		   player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
+		
+		
 	}
 	
 	public void inGameLoop()
@@ -222,7 +237,9 @@ public class GameS24 extends GameBase
         
 		for (Rect2 wall : walls) wall.draw(pen);
 		
-		for (Rect2 door : doors) door.draw(pen);	
+		for (Rect2 door : doors) door.draw(pen);
+		
+		inventory.draw(pen);
 	}
 	
 	//TOOL FOR RESIZING RECTS BEGINS//
@@ -298,7 +315,7 @@ public class GameS24 extends GameBase
 	
 	public static void main(String[] args) 
 	{
-		
+
 	}
 
 }

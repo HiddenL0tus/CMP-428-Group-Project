@@ -5,6 +5,7 @@ import java.awt.event.*;
 
 public abstract class GameBase extends Applet implements Runnable, KeyListener, MouseListener, MouseMotionListener{
 	
+	
 	int mx = -1;
 	int my = -1;
 	
@@ -143,16 +144,17 @@ public abstract class GameBase extends Applet implements Runnable, KeyListener, 
 	
 	public void init()
 	{	
+		initialize();
+		
 		//Every image has its own graphics object
-		offScreenImg = createImage(2560, 1440);
+		offScreenImg = createImage(GameS24.SCREEN_WIDTH, GameS24.SCREEN_HEIGHT);
 		offScreenPen = offScreenImg.getGraphics();
 		
+		setSize(GameS24.SCREEN_WIDTH, GameS24.SCREEN_HEIGHT);
 		addKeyListener(this);
 		addMouseListener(this);
 		addMouseMotionListener(this);
 		requestFocus();
-		
-		initialize();
 		
 		Thread t = new Thread(this);
 		t.start();
