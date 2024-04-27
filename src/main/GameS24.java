@@ -1,5 +1,6 @@
 package main;
 import java.applet.Applet;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
@@ -13,28 +14,49 @@ public class GameS24 extends GameBase
 	private ArrayList<Entity> goodies;
 	private ArrayList<Entity> baddies;
 	private ArrayList< Rect > playerProjectiles;
+	private ArrayList< Item > items;
 	
 	//get the screen width and height of the device being used for camera calculations
-	static GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-	public static final int SCREEN_WIDTH  = gd.getDisplayMode().getWidth ();
-	public static final int SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
+	public static GraphicsDevice gd;
+	public static int toolBarHeight = 0;
+	public static int bottomBarHeight = 0;
+		
+	public static int SCREEN_WIDTH;
+	public static int SCREEN_HEIGHT;
+	
 	
 	Image testMap;
 	Rect2[] walls, doors;
 	
 	Player player;
 	Orc[] orcList;
+	
 	WoodSword sword;
+
+	Inventory inventory;
 	
 	String attackMode = "";
 	
 	public void initialize()
 	{	
+		gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
+		SCREEN_WIDTH = gd.getDisplayMode().getWidth();
+		SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
+		toolBarHeight = getInsets().top;
+		bottomBarHeight = getInsets().bottom;
+		
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
+		
+		inventory = new Inventory(this);
 		
 		goodies           = new ArrayList<>();
 		baddies           = new ArrayList<>();
 		playerProjectiles = new ArrayList<>();
+		items             = new ArrayList<>();
+		
+		items.add(new Potion("Health", 597, 400));
+		items.add(new Potion("Immunity", 630, 400));
+		items.add(new Potion("Health", 750, 400));
 		
 		player  = new Player(1300, 1200);
 		
@@ -71,6 +93,8 @@ public class GameS24 extends GameBase
 		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
 				   		   player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
+		
+		
 	}
 	
 	public void inGameLoop()
@@ -79,6 +103,20 @@ public class GameS24 extends GameBase
 		
 		if (pressing[_1]) attackMode = "melee";
 		if (pressing[_2]) attackMode = "ranged";
+		
+		Iterator<Item> iterator = items.iterator();
+		while (iterator.hasNext()) 
+		{
+			Item item = iterator.next();
+			if (player.overlaps(item))
+			{	//attempt to add item to inventory after overlap
+				boolean successful = inventory.addItem(item);
+				if (successful) {
+					iterator.remove(); 
+				}
+			}
+		}
+		
 		
 		controlMovement();
 		
@@ -211,7 +249,10 @@ public class GameS24 extends GameBase
 		
 		for (Rect2 door : doors) door.draw(pen);
 		
-		if (sword.isVisible) sword.draw(pen);
+		//if (sword.isVisible) sword.draw(pen);
+		for (Item item : items) item.draw(pen);
+		
+		inventory.draw(pen);
 	}
 	
 	//TOOL FOR RESIZING RECTS BEGINS//
@@ -287,6 +328,6 @@ public class GameS24 extends GameBase
 	
 	public static void main(String[] args) 
 	{
-		
+
 	}
 }
