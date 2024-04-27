@@ -8,6 +8,6 @@ public class Orc extends Entity
 	
 	public Orc(int x, int y)
 	{
-		super("Orc", poseMonster, x, y, 38, 37, countMonster, 10, 10);
+		super("enemies/Orc", poseMonster, x, y, 38, 37, countMonster, 4, 10);
 	}
 }
