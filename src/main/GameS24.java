@@ -15,6 +15,7 @@ public class GameS24 extends GameBase
 	private ArrayList<Entity> goodies;
 	private ArrayList<Entity> baddies;
 	private ArrayList< Rect > playerProjectiles;
+	private ArrayList< Item > items;
 	
 	//get the screen width and height of the device being used for camera calculations
 	public static GraphicsDevice gd;
@@ -32,11 +33,9 @@ public class GameS24 extends GameBase
 	Orc[] orcList;
 	Sprite sword;
 	
-	Potion hp;
-	Key key1;
-	Key key2;
+	//Potion hp;
 	
-	UI inventory;
+	Inventory inventory;
 	
 	//public String pose = ""
 	
@@ -52,12 +51,19 @@ public class GameS24 extends GameBase
 		
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
 		
-		hp = new Potion("Health", 597, 400);
-		inventory = new UI(this);
+		inventory = new Inventory(this);
+		//hp = new Potion("Health", 597, 400);
+		//hp.setItem();
+		
 		
 		goodies           = new ArrayList<>();
 		baddies           = new ArrayList<>();
 		playerProjectiles = new ArrayList<>();
+		items             = new ArrayList<>();
+		
+		items.add(new Potion("Health", 597, 400));
+		items.add(new Potion("Immunity", 630, 400));
+		items.add(new Potion("Health", 750, 400));
 		
 		player  = new Player(1200, 1200);
 		//sword   = new Sprite("Wood Sword",)
@@ -104,9 +110,19 @@ public class GameS24 extends GameBase
 		if (pressing[_1]) attackMode = "melee";
 		if (pressing[_2]) attackMode = "ranged";
 		
-		if(player.overlaps(hp)) {
-			hp.activate();
+		Iterator<Item> iterator = items.iterator();
+		while (iterator.hasNext()) 
+		{
+			Item item = iterator.next();
+			if (player.overlaps(item))
+			{	//attempt to add item to inventory after overlap
+				boolean successful = inventory.addItem(item);
+				if (successful) {
+					iterator.remove(); 
+				}
+			}
 		}
+		
 		
 		controlMovement();
 		
@@ -225,8 +241,6 @@ public class GameS24 extends GameBase
 	{
 		pen.drawImage(testMap, 0 - Camera.x, 0 - Camera.y, 894 * 2, 864 * 2, null); //the image size is 894x864
 		
-		hp.draw(pen);
-		
 		if (player.meleeHitbox != null) player.meleeHitbox.draw(pen);
 		
 		for (Sprite goody : goodies) goody.draw(pen); //Draws all the sprites in the goodies List
@@ -238,6 +252,8 @@ public class GameS24 extends GameBase
 		for (Rect2 wall : walls) wall.draw(pen);
 		
 		for (Rect2 door : doors) door.draw(pen);
+		
+		for (Item item : items) item.draw(pen);
 		
 		inventory.draw(pen);
 	}

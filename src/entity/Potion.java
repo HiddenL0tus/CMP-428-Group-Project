@@ -10,12 +10,13 @@ public class Potion extends Item{
 		super(pType, x, y, 32, 32);
 		potionType = pType;
 		image = Toolkit.getDefaultToolkit().getImage("items/" + pType + "_Potion.png");
+		setConsumable();
 	}
 	
-	public void activate() {
-		if(potionType.equals("Health")) {
-			equipped = true;
-			System.out.println("Health Potion activated");
-		}
-	}
+//	public void equip() {
+//		if(potionType.equals("Health")) {
+//			equipped = true;
+//			System.out.println("Health Potion Obtained");
+//		}
+//	}
 }
