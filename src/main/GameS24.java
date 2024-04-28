@@ -11,43 +11,34 @@ import entity.*;
 
 public class GameS24 extends GameBase 
 {
+	//get the screen width and height of the device being used for camera calculations
+	public static GraphicsDevice gd;
+	public static int toolBarHeight   = 0;
+	public static int bottomBarHeight = 0;
+			
+	public static int SCREEN_WIDTH, SCREEN_HEIGHT;
+	
 	private ArrayList<Entity> goodies;
 	private ArrayList<Entity> baddies;
 	private ArrayList< Rect > playerProjectiles;
 	private ArrayList< Item > items;
 	
-	//get the screen width and height of the device being used for camera calculations
-	public static GraphicsDevice gd;
-	public static int toolBarHeight = 0;
-	public static int bottomBarHeight = 0;
-		
-	public static int SCREEN_WIDTH;
-	public static int SCREEN_HEIGHT;
-	
-	
 	Image testMap;
-	Rect2[] walls, doors;
 	
 	Player player;
 	Orc[] orcList;
 	
-	WoodSword sword;
-
-	Inventory inventory;
-	
-	String attackMode = "";
+	Rect2[] walls, doors;
 	
 	public void initialize()
 	{	
 		gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice();
-		SCREEN_WIDTH = gd.getDisplayMode().getWidth();
-		SCREEN_HEIGHT = gd.getDisplayMode().getHeight();
-		toolBarHeight = getInsets().top;
+		SCREEN_WIDTH    = gd.getDisplayMode().getWidth ();
+		SCREEN_HEIGHT   = gd.getDisplayMode().getHeight();
+		toolBarHeight   = getInsets().top;
 		bottomBarHeight = getInsets().bottom;
 		
 		testMap = Toolkit.getDefaultToolkit().getImage("preview.png");
-		
-		inventory = new Inventory(this);
 		
 		goodies           = new ArrayList<>();
 		baddies           = new ArrayList<>();
@@ -57,10 +48,9 @@ public class GameS24 extends GameBase
 		items.add(new Potion("Health", 597, 400));
 		items.add(new Potion("Immunity", 630, 400));
 		items.add(new Potion("Health", 750, 400));
+		items.add(new WoodSword(1300, 1000, 12, 43, "UP"));
 		
 		player  = new Player(1300, 1200);
-		
-		sword   = new WoodSword(1300, 1000, 12, 43, "UP");
 			
 		orcList = new Orc[] //it's easy to add more Orcs!
 		{
@@ -93,42 +83,36 @@ public class GameS24 extends GameBase
 		
 		Camera.setPosition(player.x + (player.w / 2) - (SCREEN_WIDTH  / 2),
 				   		   player.y + (player.h / 2) - (SCREEN_HEIGHT / 2));
-		
-		
 	}
 	
 	public void inGameLoop()
 	{	
 		player.physicsOff();
 		
-		if (pressing[_1]) attackMode = "melee";
-		if (pressing[_2]) attackMode = "ranged";
-		
-		Iterator<Item> iterator = items.iterator();
-		while (iterator.hasNext()) 
+		if (pressing[_1])
 		{
-			Item item = iterator.next();
-			if (player.overlaps(item))
-			{	//attempt to add item to inventory after overlap
-				boolean successful = inventory.addItem(item);
-				if (successful) {
-					iterator.remove(); 
-				}
-			}
+			Item weapon1 = player.inventory.weapons[0];
+			
+			if (weapon1 != null) player.inventory.setSelectedWeapon(weapon1);
+		}
+		if (pressing[_2])
+		{
+			Item weapon2 = player.inventory.weapons[1];
+			
+			if (weapon2 != null) player.inventory.setSelectedWeapon(weapon2);
 		}
 		
+		pickupItems(player);
 		
 		controlMovement();
 		
-		controlAttack();
+		if (player.inventory.selectedWeapon != null) controlAttack(player.inventory.selectedWeapon);
 		
 		playerDamagesBaddies();
 		
 		enemiesChaseAndEvadePlayer();
 		
 		player.move();
-		
-		if (player.overlaps(sword)) sword.equipped = true;
 		
 		for (Rect projectile : playerProjectiles) projectile.move();
 		
@@ -150,6 +134,22 @@ public class GameS24 extends GameBase
 	    Camera.setPosition(targetX, targetY); 
 	}
 	
+	public void pickupItems(Player player)
+	{
+		Iterator<Item> iterator = items.iterator();
+		while (iterator.hasNext()) 
+		{
+			Item item = iterator.next();
+			if (player.overlaps(item))
+			{	//attempt to add item to inventory after overlap
+				boolean successful = player.inventory.addItem(item);
+				if (successful) {
+					iterator.remove(); 
+				}
+			}
+		}
+	}
+	
 	public void controlMovement()
 	{
 		int moveSpeed = 3;
@@ -161,22 +161,23 @@ public class GameS24 extends GameBase
 		if (pressing[RT]) player.goRT(moveSpeed);
 	}
 	
-	public void controlAttack()
+	public void controlAttack(Item weapon)
 	{
-		if (sword.equipped) sword.isVisible = false; //make sword invisible each tick so it doesn't show when you aren't attacking
+		weapon.isVisible = false; //make sword invisible each tick so it doesn't show when you aren't attacking
 		
 		if (!pressing[_W] && !pressing[_A] && !pressing[_S] && !pressing[_D])
 		{
 			player.atkEnabled = true;
 		}
-		if (attackMode.equals("melee"))
+		if (weapon.getSubType().equals("melee") && player.atkEnabled);
 		{
-				 if (player.atkEnabled && pressing[_W]) sword.updatePositionRelativeTo(player, "UP");
-			else if (player.atkEnabled && pressing[_S]) sword.updatePositionRelativeTo(player, "DN");
-			else if (player.atkEnabled && pressing[_A]) sword.updatePositionRelativeTo(player, "LT");
-			else if (player.atkEnabled && pressing[_D]) sword.updatePositionRelativeTo(player, "RT");	
+			
+				 if (pressing[_W]) weapon.updatePositionRelativeTo(player, "UP");
+			else if (pressing[_S]) weapon.updatePositionRelativeTo(player, "DN");
+			else if (pressing[_A]) weapon.updatePositionRelativeTo(player, "LT");
+			else if (pressing[_D]) weapon.updatePositionRelativeTo(player, "RT");	
 		}		
-		if (attackMode.equals("ranged"))
+		if (weapon.getSubType().equals("ranged") && player.atkEnabled)
 		{
 			int pelletVelocity = 5;
 			
@@ -197,8 +198,9 @@ public class GameS24 extends GameBase
 		{
 			Entity baddy = iterator.next();
 			
+			Item weapon = player.inventory.selectedWeapon;
 			//melee damage
-			if (sword.equipped && sword.isVisible && sword.overlaps(baddy))
+			if (weapon != null && weapon.isVisible && weapon.overlaps(baddy))
 			{
 				baddy.takeDamage(6);
 				if (baddy.health.isDead())
@@ -249,10 +251,13 @@ public class GameS24 extends GameBase
 		
 		for (Rect2 door : doors) door.draw(pen);
 		
-		//if (sword.isVisible) sword.draw(pen);
-		for (Item item : items) item.draw(pen);
+		for (Item  item : items) item.draw(pen);
 		
-		inventory.draw(pen);
+		
+		Item weapon = player.inventory.selectedWeapon;
+		if (weapon != null && weapon.isVisible) weapon.draw(pen);
+		
+		player.inventory.draw(pen, this);
 	}
 	
 	//TOOL FOR RESIZING RECTS BEGINS//
@@ -324,7 +329,7 @@ public class GameS24 extends GameBase
 			door.resizer.dropped();
 		}
 	}
-	//TOOL for RESIZING RECTS ENDS//
+	//TOOL for RESIZING RECTS ENDS*/
 	
 	public static void main(String[] args) 
 	{

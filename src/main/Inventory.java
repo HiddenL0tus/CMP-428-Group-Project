@@ -7,25 +7,36 @@ import entity.*;
 
 public class Inventory {
 	
-	GameS24 game;
 	public Item[] weapons;
 	public Item[] items;
+	
+	public Item selectedWeapon = null;
 	
 	final int slotSize = 64;
 	final int inventoryW = slotSize * 4;
 	final int inventoryH = slotSize * 1;
 	final int halfInvWidth = inventoryW / 2;
 	
-	public Inventory(GameS24 game) {
-		this.game = game;
-		
+	public Inventory() {	
 		//only allowed to carry 2 weapons and 2 items
 		weapons = new Item[2];
-		items = new Item[2];
+		items   = new Item[2];
 	}
 	
-	public boolean addWeapon(Item item) {
-		if(item.getItemType().equals("Weapon")) {
+	/* This method returns false if the item was not able to be added to the inventory.
+	 * The item's type is first checked so it can be added to the appropriate slot. */
+	public boolean addItem(Item item) {
+		if(item.isConsumable()) {
+			for(int i = 0; i < items.length; i++) {
+				if(items[i] == null) { 
+					items[i] = item;
+					item.equip();
+					System.out.println("Item Obtained");
+					return true;
+				}
+			}
+		}
+		else if(item.isWeapon()) {
 			for(int i = 0; i < weapons.length; i++) {
 				if(weapons[i] == null) { 
 					weapons[i] = item;
@@ -38,24 +49,13 @@ public class Inventory {
 		return false;
 	}
 	
-	public boolean addItem(Item item) {
-		//checks if item is the right type and if you can add the item
-		if(item.getItemType().equals("Consumable")) {
-			for(int i = 0; i < items.length; i++) {
-				if(items[i] == null) { 
-					items[i] = item;
-					item.equip();
-					System.out.println("Item Obtained");
-					return true;
-				}
-			}
-		}
-		return false;
-
+	public void setSelectedWeapon(Item item)
+	{
+		if (item.isWeapon()) selectedWeapon = item;
 	}
 	
-	
-	public void draw(Graphics pen) {
+	public void draw(Graphics pen, GameS24 game) {
+		
 		pen.setColor(Color.BLACK);
 		
 		int slotSize = 64;
@@ -75,15 +75,6 @@ public class Inventory {
 		final int item0SlotX = itemSlotStartX;
 		final int item1SlotX = itemSlotStartX + slotSize;
 		
-		if(items[0] != null) {
-			pen.drawImage(items[0].image, item0SlotX, inventoryY, slotSize, slotSize, null);
-		}
-		
-		if(items[1] != null) {
-			pen.drawImage(items[1].image, item1SlotX, inventoryY, slotSize, slotSize, null);
-		}
-		
-
 		if(weapons[0] != null) {
 			pen.drawImage(weapons[0].image, weapon0SlotX, inventoryY, slotSize, slotSize, null);
 		}
@@ -91,6 +82,13 @@ public class Inventory {
 		if(weapons[1] != null) {
 			pen.drawImage(weapons[1].image, weapon1SlotX, inventoryY, slotSize, slotSize, null);
 		}
-
+		
+		if(items[0] != null) {
+			pen.drawImage(items[0].image, item0SlotX, inventoryY, slotSize, slotSize, null);
+		}
+		
+		if(items[1] != null) {
+			pen.drawImage(items[1].image, item1SlotX, inventoryY, slotSize, slotSize, null);
+		}	
 	}
 }
