@@ -9,13 +9,11 @@ public class Entity extends Sprite
 	public HealthState health;
 	public Rect hurtbox;
 	public boolean atkEnabled = true;
-	public int halfW, halfH;
+	
 	public Inventory inventory;
 	
 	public Entity(String name, String[] pose, int x, int y, int w, int h, int[] count, int duration, int maxHealth) {
 		super(name, pose, x, y, w, h, count, duration);
-		halfW = w/2;
-		halfH = h/2;
 		this.health = new HealthState(maxHealth);
 		inventory   = new Inventory();
 	}
@@ -53,65 +51,59 @@ public class Entity extends Sprite
 		moving = true;
 	}
 	
-	//melee attacks need no cooldown
-	public void atkLT()
+	public void faceLT()
 	{
 		action = 0;
 	}
 	
-	public void atkRT()
+	public void faceRT()
 	{
 		action = 1;
 	}
-	
-	public void atkUP()
-	{
-		//action = 0;
-	}
-	
-	public void atkDN()
-	{
-		//action = 0;
-	}
 		
-	public Rect shootLT(double velocity)
+	public Arrow shootLT(double velocity)
 	{
 		action = 0;
 		
 		atkEnabled = false;
 		
-		return new Rect(x - w, y, w, h, Color.RED, -velocity, 0);
+		return new Arrow(x, y + halfH, 19, 11, "LT", -velocity, 0);
 	}
 	
-	public Rect shootRT(double velocity)
+	public Arrow shootRT(double velocity)
 	{
 		action = 1;
 		
 		atkEnabled = false;
 		
-		return new Rect(x + w, y, w, h, Color.RED, velocity, 0);
+		return new Arrow(x + w, y + halfH, 19, 11, "RT", velocity, 0);
 	}
 	
-	public Rect shootUP(double velocity)
+	public Arrow shootUP(double velocity)
 	{
 		//action = 3;
 		
 		atkEnabled = false;
 		
-		return new Rect(x, y - h, w, h, Color.RED, 0, -velocity);
+		return new Arrow(x + halfW - 4, y, 11, 19, "UP", 0, -velocity);
 	}
 	
-	public Rect shootDN(double velocity)
+	public Arrow shootDN(double velocity)
 	{
 		//action = 2;	
 		
 		atkEnabled = false;
 		
-		return new Rect(x, y + w, w, h, Color.RED, 0, velocity);
+		return new Arrow(x + halfW - 4, y + h, 11, 19, "DN", 0, velocity);
 	}
 	
 	public void takeDamage(int damageAmount) 
 	{	
         health.takeDamage(damageAmount);
     }
+	
+	public boolean isDead()
+	{
+	    return health.getCurrentHealth() <= 0;
+	}
 }

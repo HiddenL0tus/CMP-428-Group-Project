@@ -20,7 +20,7 @@ public class GameS24 extends GameBase
 	
 	private ArrayList<Entity> goodies;
 	private ArrayList<Entity> baddies;
-	private ArrayList< Rect > playerProjectiles;
+	private ArrayList<Arrow > playerProjectiles;
 	private ArrayList< Item > items;
 	
 	Image testMap;
@@ -48,7 +48,8 @@ public class GameS24 extends GameBase
 		items.add(new Potion("Health", 597, 400));
 		items.add(new Potion("Immunity", 630, 400));
 		items.add(new Potion("Health", 750, 400));
-		items.add(new WoodSword(1300, 1000, 12, 43, "UP"));
+		items.add(new WoodSword(1300, 1000));
+		items.add(new WoodBow(1350, 1000));
 		
 		player  = new Player(1300, 1200);
 			
@@ -91,30 +92,30 @@ public class GameS24 extends GameBase
 		
 		if (pressing[_1])
 		{
-			Item weapon1 = player.inventory.weapons[0];
+			Weapon weapon1 = player.inventory.weapons[0];
 			
-			if (weapon1 != null) player.inventory.setSelectedWeapon(weapon1);
+			player.inventory.setSelectedWeapon(weapon1);
 		}
 		if (pressing[_2])
 		{
-			Item weapon2 = player.inventory.weapons[1];
+			Weapon weapon2 = player.inventory.weapons[1];
 			
-			if (weapon2 != null) player.inventory.setSelectedWeapon(weapon2);
+			player.inventory.setSelectedWeapon(weapon2);
 		}
 		
 		pickupItems(player);
 		
 		controlMovement();
 		
+		player.move();
+		
 		if (player.inventory.selectedWeapon != null) controlAttack(player.inventory.selectedWeapon);
+		
+		for (Rect projectile : playerProjectiles) projectile.move();
 		
 		playerDamagesBaddies();
 		
 		enemiesChaseAndEvadePlayer();
-		
-		player.move();
-		
-		for (Rect projectile : playerProjectiles) projectile.move();
 		
 		for (Rect2 wall : walls)
 		{
@@ -161,7 +162,7 @@ public class GameS24 extends GameBase
 		if (pressing[RT]) player.goRT(moveSpeed);
 	}
 	
-	public void controlAttack(Item weapon)
+	public void controlAttack(Weapon weapon)
 	{
 		weapon.isVisible = false; //make sword invisible each tick so it doesn't show when you aren't attacking
 		
@@ -169,22 +170,38 @@ public class GameS24 extends GameBase
 		{
 			player.atkEnabled = true;
 		}
-		if (weapon.getSubType().equals("melee") && player.atkEnabled);
+		else weapon.isVisible = true;
+		
+		if (weapon.isMelee() && player.atkEnabled);
 		{
-			
 				 if (pressing[_W]) weapon.updatePositionRelativeTo(player, "UP");
 			else if (pressing[_S]) weapon.updatePositionRelativeTo(player, "DN");
 			else if (pressing[_A]) weapon.updatePositionRelativeTo(player, "LT");
 			else if (pressing[_D]) weapon.updatePositionRelativeTo(player, "RT");	
 		}		
-		if (weapon.getSubType().equals("ranged") && player.atkEnabled)
+		if (weapon.isRanged() && player.atkEnabled)
 		{
-			int pelletVelocity = 5;
-			
-			if (player.atkEnabled && pressing[_W]) playerProjectiles.add(player.shootUP(pelletVelocity));
-			if (player.atkEnabled && pressing[_S]) playerProjectiles.add(player.shootDN(pelletVelocity));
-			if (player.atkEnabled && pressing[_A]) playerProjectiles.add(player.shootLT(pelletVelocity));
-			if (player.atkEnabled && pressing[_D]) playerProjectiles.add(player.shootRT(pelletVelocity));
+			int pelletVelocity = 6;
+			if (pressing[_W]) 
+			{
+				weapon.updatePositionRelativeTo(player, "UP");
+				playerProjectiles.add(player.shootUP(pelletVelocity));
+			}
+			if (pressing[_S]) 
+			{
+				weapon.updatePositionRelativeTo(player, "DN");
+				playerProjectiles.add(player.shootDN(pelletVelocity));
+			}
+			if (pressing[_A])
+			{
+				weapon.updatePositionRelativeTo(player, "LT");
+				playerProjectiles.add(player.shootLT(pelletVelocity));
+			}
+			if (pressing[_D]) 
+			{
+				weapon.updatePositionRelativeTo(player, "RT");
+				playerProjectiles.add(player.shootRT(pelletVelocity));
+			}
 		}
 	}
 	
@@ -198,12 +215,12 @@ public class GameS24 extends GameBase
 		{
 			Entity baddy = iterator.next();
 			
-			Item weapon = player.inventory.selectedWeapon;
+			Weapon weapon = player.inventory.selectedWeapon;
 			//melee damage
-			if (weapon != null && weapon.isVisible && weapon.overlaps(baddy))
+			if (weapon != null && weapon.isVisible && weapon.isMelee() && weapon.overlaps(baddy))
 			{
 				baddy.takeDamage(6);
-				if (baddy.health.isDead())
+				if (baddy.isDead())
 				{
 					iterator.remove(); //removes the enemy from the baddies list
 					break; //do not continue checking projectiles against the removed baddy
@@ -211,13 +228,20 @@ public class GameS24 extends GameBase
 			}
 			
 			//projectile damage
-			for (Rect projectile : playerProjectiles) if (projectile.overlaps(baddy))
+			Iterator<Arrow> arrowIterator = playerProjectiles.iterator();
+			while(arrowIterator.hasNext())
 			{
-				baddy.takeDamage(1); //i think it does piercing damage
-				if (baddy.health.isDead())
+				Rect arrow = arrowIterator.next();
+				if (arrow.overlaps(baddy))
 				{
-					iterator.remove();
-					break;
+					baddy.takeDamage(4); //i think it does piercing damage
+					if (baddy.isDead())
+					{
+						arrowIterator.remove();
+						iterator.remove();
+						break;
+					}
+					arrowIterator.remove();
 				}
 			}	
 		}
@@ -254,7 +278,7 @@ public class GameS24 extends GameBase
 		for (Item  item : items) item.draw(pen);
 		
 		
-		Item weapon = player.inventory.selectedWeapon;
+		Weapon weapon = player.inventory.selectedWeapon;
 		if (weapon != null && weapon.isVisible) weapon.draw(pen);
 		
 		player.inventory.draw(pen, this);

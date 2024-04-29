@@ -17,9 +17,4 @@ public class HealthState {
     public int getCurrentHealth() {
         return currentHealth;
     }
-
-    public boolean isDead() {
-        return currentHealth <= 0;
-    }
-
 }

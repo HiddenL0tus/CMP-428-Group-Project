@@ -7,10 +7,10 @@ import entity.*;
 
 public class Inventory {
 	
-	public Item[] weapons;
+	public Weapon[] weapons;
 	public Item[] items;
 	
-	public Item selectedWeapon = null;
+	public Weapon selectedWeapon = null;
 	
 	final int slotSize = 64;
 	final int inventoryW = slotSize * 4;
@@ -19,7 +19,7 @@ public class Inventory {
 	
 	public Inventory() {	
 		//only allowed to carry 2 weapons and 2 items
-		weapons = new Item[2];
+		weapons = new Weapon[2];
 		items   = new Item[2];
 	}
 	
@@ -39,7 +39,7 @@ public class Inventory {
 		else if(item.isWeapon()) {
 			for(int i = 0; i < weapons.length; i++) {
 				if(weapons[i] == null) { 
-					weapons[i] = item;
+					weapons[i] = (Weapon)item;
 					item.equip();
 					System.out.println("Weapon Obtained");
 					return true;
@@ -49,9 +49,9 @@ public class Inventory {
 		return false;
 	}
 	
-	public void setSelectedWeapon(Item item)
+	public void setSelectedWeapon(Weapon weapon)
 	{
-		if (item.isWeapon()) selectedWeapon = item;
+		selectedWeapon = weapon;
 	}
 	
 	public void draw(Graphics pen, GameS24 game) {

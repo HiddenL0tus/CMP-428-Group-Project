@@ -5,7 +5,7 @@ import java.awt.Image;
 
 public class Sprite extends Rect 
 {
-	protected Animation[] animation;
+	private Animation[] animation;
 	int[] animationFrames;
 	
 	public int     action = 0; //the number indicates the action that we chose to store in that element of the array
@@ -40,5 +40,10 @@ public class Sprite extends Rect
 			moving = false;
 		}
 		super.draw(pen); //Draws Sprites hurtbox
+	}
+	
+	public Animation[] getAnimationArr()
+	{
+		return animation;
 	}
 }
