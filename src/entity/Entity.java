@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import engine.Camera;
 import engine.Rect;
 import engine.Sprite;
+import main.Inventory;
 
 public class Entity extends Sprite
 {
@@ -127,6 +128,12 @@ public class Entity extends Sprite
 	{	
         health.takeDamage(damageAmount);
     }
+	
+	public void useItem(Item item, Inventory inv) {
+		if(inv.inInventory(item)) {
+			inv.useItem(item);
+		}	
+	}
 	
 	public void draw(Graphics pen)
 	{		

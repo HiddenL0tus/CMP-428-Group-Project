@@ -21,5 +21,9 @@ public class HealthState {
     public boolean isDead() {
         return currentHealth <= 0;
     }
+    
+    public void restoreHealth() {
+    	currentHealth = maxHealth;
+    }
 
 }

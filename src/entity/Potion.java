@@ -13,6 +13,7 @@ public class Potion extends Item{
 		setConsumable();
 	}
 	
+	
 //	public void equip() {
 //		if(potionType.equals("Health")) {
 //			equipped = true;
