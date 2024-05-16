@@ -60,7 +60,7 @@ public class GameS24 extends GameBase
 		items.add(new Potion("Health", 597, 400));
 		items.add(new Potion("Immunity", 630, 400));
 		items.add(new Potion("Health", 750, 400));
-		items.add(new WoodSword(1300, 1000));
+		items.add(new WoodSword(2750, 2400));
 		items.add(new WoodBow(1350, 1000));
 		
 		player = new Player(2700, 2400);
