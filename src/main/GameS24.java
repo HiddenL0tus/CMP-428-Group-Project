@@ -37,7 +37,6 @@ public class GameS24 extends GameBase
 	Player player;
 	Orc[] orcList;
 	
-	Potion[] potions;
 	Rect2[] walls, doors;
 	
 	boolean Q_pressed = false;
