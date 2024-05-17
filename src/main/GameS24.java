@@ -9,7 +9,7 @@ import java.util.Iterator;
 import engine.*;
 import entity.*;
 
-public class GameS24 extends GameBase 
+public class GameS24 extends GameBase
 {
 	
 	 public static final int MAP_WIDTH = 100;   // in tiles
