@@ -10,10 +10,8 @@ public class Key extends Item{
 		super(kType, x, y, 32, 32);
 		keyType = kType;
 		image = Toolkit.getDefaultToolkit().getImage("items/" + kType + "_Key.png");
+		stackable = true;
 	}
 	
-	public boolean isEquipped() {
-		return equipped;
-	}
 	
 }

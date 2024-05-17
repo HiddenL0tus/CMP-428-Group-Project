@@ -9,6 +9,8 @@ public class Rect {
 	
 	double ay = G;
 	
+	public int halfW, halfH;
+	
 	static double G = .7;
 	static double F = .6;
 	
@@ -43,12 +45,22 @@ public class Rect {
 		this.h = h;
 		this.c = c;	
 		setVelocity(vx, vy);
+		halfW = w/2;
+		halfH = h/2;
 	}
 	
 	public void setSize(int w, int h)
 	{
 		this.w = w;
 		this.h = h;
+		halfW = w/2;
+		halfH = h/2;
+	}
+	
+	public void setPosition(int x, int y)
+	{
+		this.x = x;
+		this.y = y;
 	}
 	
 	public void setVelocity(double vx, double vy)

@@ -17,13 +17,22 @@ public class HealthState {
     public int getCurrentHealth() {
         return currentHealth;
     }
-
+    
+    
     public boolean isDead() {
         return currentHealth <= 0;
     }
     
     public void restoreHealth() {
     	currentHealth = maxHealth;
+    }
+    
+    public int getMaxHealth() {
+    	return maxHealth;
+    }
+    
+    public void increaseMaxHealthBy(int num) {
+    	maxHealth += num;
     }
 
 }
